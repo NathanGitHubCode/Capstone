@@ -1,10 +1,11 @@
 import subprocess
 import csv
 
-
-def create_account():
-    username = input("Enter the username: ")
-    password = input("Enter the password: ")
+# class UserManagementFunctions:
+def create_account(username = None, password = None):
+    if username is None or password is None:
+        username = input("Enter the username: ")
+        password = input("Enter the password: ")
     subprocess.call(["net", "user", username, password, "/ADD"])
     print("User " + username + " has been created with the password " + password)
 
@@ -89,37 +90,38 @@ def main_menu():
     print("12. Enable a user account")
     print("13. Exit")
     print("===============================================================================================================")
+def main():
+    while True:
+        main_menu()
+        choice = input("Enter your choice: ")
 
-while True:
-    main_menu()
-    choice = input("Enter your choice: ")
-
-    if choice == "1":
-        create_account()
-    elif choice == "2":
-        bulk_account_creation()
-    elif choice == "3":
-        delete_account()
-    elif choice == "4":
-        bulk_account_deletion()
-    elif choice == "5":
-        change_password()
-    elif choice == "6":
-        change_account_to_admin()
-    elif choice == "7":
-        change_account_to_standard()
-    elif choice == "8":
-        list_standard_accounts()
-    elif choice == "9":
-        list_admin_accounts()
-    elif choice == "10":
-        expire_password()
-    elif choice == "11":
-        disable_account()
-    elif choice == "12":
-        enable_account()
-    elif choice == "13":
-        break
-    else:
-        print("Invalid choice")
-
+        if choice == "1":
+            create_account()
+        elif choice == "2":
+            bulk_account_creation()
+        elif choice == "3":
+            delete_account()
+        elif choice == "4":
+            bulk_account_deletion()
+        elif choice == "5":
+            change_password()
+        elif choice == "6":
+            change_account_to_admin()
+        elif choice == "7":
+            change_account_to_standard()
+        elif choice == "8":
+            list_standard_accounts()
+        elif choice == "9":
+            list_admin_accounts()
+        elif choice == "10":
+            expire_password()
+        elif choice == "11":
+            disable_account()
+        elif choice == "12":
+            enable_account()
+        elif choice == "13":
+            break
+        else:
+            print("Invalid choice")
+if __name__ == "__main__":
+    main()
