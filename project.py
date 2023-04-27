@@ -4,25 +4,26 @@ import subprocess
 import audit_logging
 
 
-def create_account(username = None, password = None):
+def create_account():
     print("This will create an account")
-    if username is None or password is None:
-        username = input("Enter the username: ")
-        password = input("Enter the password: ")
-        try:
-            output = subprocess.check_output(["net", "user", username, password, "/ADD"], stderr=subprocess.STDOUT)
-            print("User - " + username + " has been created with the password - " + password)
-            audit_logging.log_info(f"Account created successfully for user: {username}")
-        except subprocess.CalledProcessError as e:
-            if e.returncode == 2:
-                print("Error: The account already exists.")
-                audit_logging.log_error(f"Failed to create account: {username} - The account already exists")
-            else:
-                print("Error:", str(e.output))
-                audit_logging.log_error(f"Failed to create account: {username} - {str(e.output)}")
+    username = input("Enter the username: ")
+    password = input("Enter the password: ")
+    try:
+        output = subprocess.check_output(["net", "user", username, password, "/ADD"], stderr=subprocess.STDOUT)
+        print("User - " + username + " has been created with the password - " + password)
+        audit_logging.log_info(f"Account created successfully for user: {username}")
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 2:
+            print("Error: The account already exists.")
+            audit_logging.log_error(f"Failed to create account: {username} - The account already exists")
+        else:
+            print("Error:", str(e.output))
+            audit_logging.log_error(f"Failed to create account: {username} - {str(e.output)}")
   
 
 def bulk_account_creation():
+    print("Function reads first row as header, and creates accounts from the second row onwards")
+    print("The first column is the username, the second column is the password")
     print("This will create accounts from a CSV file")
     csv_file = input("Enter the location of the CSV file: ")
     try:
@@ -52,9 +53,8 @@ def delete_account():
     print("This will delete an account")
     username = input("Enter the username to delete: ")
     if(script_confirmation == True or is_admin_account(username) == True):
-        print(f"Are you sure you want to delete this account {username}? (Y/N)")
-        confirmation = input()
-        if(confirmation == "Y" or confirmation == "y"):
+        confirmation = input(f"Are you sure you want to delete this account {username}? (Y/N): ")
+        if(confirmation.lower == "y"):
             try:
                 subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
                 audit_logging.log_info(f"{username} has been deleted")
@@ -85,32 +85,68 @@ def bulk_account_deletion():
     print("This will delete accounts from a CSV file")
     csv_file = input("Enter the location of the CSV file: ")
     try:
-        # Open the CSV file
-        with open(csv_file) as csvfile:
-            reader = csv.reader(csvfile)
-            next(reader)
-
-            # Loop through the CSV rows
-            for row in reader:
-                username = row[0]
-                try:
-                    # Delete the user account
-                    subprocess.check_call(["net", "user", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        if script_confirmation == True:
+            with open(csv_file) as csvfile:
+                reader = csv.reader(csvfile)
+                next(reader)
+                print("You are about to delete the following accounts:")            
+                for row in reader:
                     
-                    print("User " + username + " has been deleted")
-
-                    # Log the successful deletion
-                    audit_logging.log_info(f"User {username} has been deleted from bulk deletion file {csv_file}")
-                except subprocess.CalledProcessError as e:
-
-                    # Log the account error
-                    if e.returncode == 2:
-                        print(f"Error: The user {username} does not exist.")
-                        audit_logging.log_error(f"Error deleting user {username}: The user {username} does not exist")
+                    if(is_admin_account(row[0]) == True):
+                        print(row[0] + " (Administrator account)")
+                    elif(does_account_exist(row[0]) == False):
+                        print(row[0] + " (Account does not exist)")
                     else:
-                        print("Error:", str(e))
-                        audit_logging.log_error(f"Error deleting user {username} from {csv_file}: {str(e)}")
+                        print(row[0])
+                user_choice = input("Are you sure you want to delete these accounts? (Y/N): ")
+                if(user_choice.lower() == "y"):
+                    with open(csv_file) as csvfile:
+                        reader = csv.reader(csvfile)
+                        next(reader)
+                        for row in reader:
+                            username = row[0]
+                            try:
+                                # Delete the user account
+                                subprocess.check_call(["net", "user", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                                
+                                print("User " + username + " has been deleted")
 
+                                # Log the successful deletion
+                                audit_logging.log_info(f"User {username} has been deleted from bulk deletion file {csv_file}")
+                            except subprocess.CalledProcessError as e:
+
+                                # Log the account error
+                                if e.returncode == 2:
+                                    print(f"Error: The user {username} does not exist.")
+                                    audit_logging.log_error(f"Error deleting user {username}: The user {username} does not exist")
+                                else:
+                                    print("Error:", str(e))
+                                    audit_logging.log_error(f"Error deleting user {username} from {csv_file}: {str(e)}")
+                else:
+                    print("Account deletion cancelled")
+        else:
+            with open(csv_file) as csvfile:
+                reader = csv.reader(csvfile)
+                next(reader)
+                for row in reader:
+                    username = row[0]
+                    try:
+                        # Delete the user account
+                        subprocess.check_call(["net", "user", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                        
+                        print("User " + username + " has been deleted")
+
+                        # Log the successful deletion
+                        audit_logging.log_info(f"User {username} has been deleted from bulk deletion file {csv_file}")
+                    except subprocess.CalledProcessError as e:
+
+                        # Log the account error
+                        if e.returncode == 2:
+                            print(f"Error: The user {username} does not exist.")
+                            audit_logging.log_error(f"Error deleting user {username}: The user {username} does not exist")
+                        else:
+                            print("Error:", str(e))
+                            audit_logging.log_error(f"Error deleting user {username} from {csv_file}: {str(e)}")        
     except FileNotFoundError:
         # Log the file error
         audit_logging.log_error(f"Error: The file {csv_file} does not exist.")
@@ -120,50 +156,103 @@ def change_password():
     print("This will change the password for an account")
     username = input("Enter the username: ")
     password = input("Enter the new password: ")
-    try:
-        subprocess.check_call(["net", "user", username, password], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        audit_logging.log_info(f"The password has been changed for {username}")
-        print(f"The password has been changed for {username}")
-    except subprocess.CalledProcessError as e:
-        if e.returncode == 2:
-            print(f"Error: The user name {username} does not exist.")
-            audit_logging.log_error(f"Error changing password for {username}: The user {username} does not exist")
+    if(script_confirmation == True or is_admin_account(username) == True):
+        confirmation = input(f"Are you sure you want to change the password for {username}? (Y/N): ")
+        if(confirmation.lower == "y"):
+            try:
+                subprocess.check_call(["net", "user", username, password], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                audit_logging.log_info(f"The password has been changed for {username}")
+                print(f"The password has been changed for {username}")
+            except subprocess.CalledProcessError as e:
+                if e.returncode == 2:
+                    print(f"Error: The user name {username} does not exist.")
+                    audit_logging.log_error(f"Error changing password for {username}: The user {username} does not exist")
+                else:
+                    audit_logging.log_error(f"Failed to change password for {username}: {e}")
+                    print(f"Failed to change password for {username}")
         else:
-            audit_logging.log_error(f"Failed to change password for {username}: {e}")
-            print(f"Failed to change password for {username}")
+            print("Password change cancelled")
+    else:
+        try:
+            subprocess.check_call(["net", "user", username, password], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            audit_logging.log_info(f"The password has been changed for {username}")
+            print(f"The password has been changed for {username}")
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 2:
+                print(f"Error: The user name {username} does not exist.")
+                audit_logging.log_error(f"Error changing password for {username}: The user {username} does not exist")
+            else:
+                audit_logging.log_error(f"Failed to change password for {username}: {e}")
+                print(f"Failed to change password for {username}")
 
 def change_account_to_admin():
     print("This will add an account to the Administrators group")
     username = input("Enter the username: ")
-    try:
-        subprocess.check_call(["net", "localgroup", "Administrators", username, "/ADD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        audit_logging.log_info(f"Changed account '{username}' to Administrator")
-        print(f"{username} has been added to the Administrators group")
-    except subprocess.CalledProcessError as e:
-        if e.returncode == 1:
-            audit_logging.log_error(f"Failed to change account: {username} - The user name could not be found.")
-            print(f"Failed to change account '{username}' - The user name could not be found.")
-        elif e.returncode == 2:
-            audit_logging.log_error(f"Failed to change account: {username} - The specified account name is already an administrator.")
-            print(f"Failed to change account '{username}' - The specified account name is already an administrator.")
+    if(script_confirmation == True):
+        confirmation = input(f"Are you sure you want to add {username} to the Administrators group? (Y/N): ")
+        if(confirmation.lower == "y"):
+            try:
+                subprocess.check_call(["net", "localgroup", "Administrators", username, "/ADD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                audit_logging.log_info(f"Changed account '{username}' to Administrator")
+                print(f"{username} has been added to the Administrators group")
+            except subprocess.CalledProcessError as e:
+                if e.returncode == 1:
+                    audit_logging.log_error(f"Failed to change account: {username} - The user name could not be found.")
+                    print(f"Failed to change account '{username}' - The user name could not be found.")
+                elif e.returncode == 2:
+                    audit_logging.log_error(f"Failed to change account: {username} - The specified account name is already an administrator.")
+                    print(f"Failed to change account '{username}' - The specified account name is already an administrator.")
+                else:
+                    audit_logging.log_error(f"Failed to change account: {username} - {e}")
         else:
-            audit_logging.log_error(f"Failed to change account: {username} - {e}")
-            print(f"Failed to change account '{username}' - {e}")
+            print("Account change cancelled")
+    else:
+        try:
+            subprocess.check_call(["net", "localgroup", "Administrators", username, "/ADD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            audit_logging.log_info(f"Changed account '{username}' to Administrator")
+            print(f"{username} has been added to the Administrators group")
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 1:
+                audit_logging.log_error(f"Failed to change account: {username} - The user name could not be found.")
+                print(f"Failed to change account '{username}' - The user name could not be found.")
+            elif e.returncode == 2:
+                audit_logging.log_error(f"Failed to change account: {username} - The specified account name is already an administrator.")
+                print(f"Failed to change account '{username}' - The specified account name is already an administrator.")
+            else:
+                audit_logging.log_error(f"Failed to change account: {username} - {e}")
+                print(f"Failed to change account '{username}' - {e}")
 
 def change_account_to_standard():
     print("This will remove the account from the Administrators group")
     username = input("Enter the username: ")
-    try:
-        subprocess.check_call(["net", "localgroup", "Administrators", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        audit_logging.log_info(f"Changed account '{username}' to Standard User")
-        print(f"{username} has been removed from the Administrators group")
-    except subprocess.CalledProcessError as e:
-        if e.returncode == 2:
-            audit_logging.log_error(f"Failed to change account: {username} is not a member of the Administrators group")
-            print(f"Failed to change account: {username} is not an Administrator")
+    if(script_confirmation == True):
+        confirmation = input(f"Are you sure you want to remove {username} from the Administrators group? (Y/N): ")
+        if(confirmation.lower == "y"):
+            try:
+                subprocess.check_call(["net", "localgroup", "Administrators", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                audit_logging.log_info(f"Changed account '{username}' to Standard User")
+                print(f"{username} has been removed from the Administrators group")
+            except subprocess.CalledProcessError as e:
+                if e.returncode == 2:
+                    audit_logging.log_error(f"Failed to change account: {username} is not a member of the Administrators group")
+                    print(f"Failed to change account: {username} is not an Administrator")
+                else:
+                    print("Failed to change account:", e)
+                    audit_logging.log_error(f"Failed to change account: {username} - {e}")
         else:
-            print("Failed to change account:", e)
-            audit_logging.log_error(f"Failed to change account: {username} - {e}")
+            print("Account change cancelled")
+    else:
+        try:
+            subprocess.check_call(["net", "localgroup", "Administrators", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            audit_logging.log_info(f"Changed account '{username}' to Standard User")
+            print(f"{username} has been removed from the Administrators group")
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 2:
+                audit_logging.log_error(f"Failed to change account: {username} is not a member of the Administrators group")
+                print(f"Failed to change account: {username} is not an Administrator")
+            else:
+                print("Failed to change account:", e)
+                audit_logging.log_error(f"Failed to change account: {username} - {e}")
 
 def list_standard_accounts():
     subprocess.call(["net", "localgroup", "Users"])
@@ -203,6 +292,17 @@ def disable_y_n_confirmation():
         script_confirmation = True    
 script_confirmation = True
 
+def does_account_exist(username):
+    try:
+        subprocess.check_call(["net", "user", username], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 2:
+            return False
+        else:
+            print("Error:", str(e))
+            audit_logging.log_error(f"Error checking if user {username} exists: {str(e)}")
+            return False
 def is_admin_account(username):
     output = subprocess.check_output(["net", "localgroup", "Administrators"])
     output_str = output.decode("utf-8")
@@ -239,7 +339,7 @@ def main_menu():
 def main():
     
     audit_logging.setup_logger()
-    is_admin()
+    # is_admin()
     if not is_admin():
         print("This script must be run as an administrator")
         exit()

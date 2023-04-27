@@ -42,6 +42,7 @@ def delete_audit_logs():
         confirm = input("Are you sure you want to delete all audit logs? (y/n) ")
         if confirm.lower() == "y":
             for file in files[:files.__len__()-1]:
+                log_info(f"log {file[12:]} deleted")
                 print(f"Deleting {file[12:]}")
                 os.remove(file)
         else:
