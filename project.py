@@ -46,7 +46,7 @@ def bulk_account_creation():
                         audit_logging.log_error(f"Failed to create account: {username} - {str(e)}")
     except FileNotFoundError as e:
          print(f"'{csv_file}' is not a valid file path")
-         audit_logging.log_error(f"Failed to open CSV file '{csv_file}': {e}")
+         audit_logging.log_error(f"Failed to open CSV file '{csv_file}' - not a valid file path")
 
 
 def delete_account():
@@ -54,7 +54,7 @@ def delete_account():
     username = input("Enter the username to delete: ")
     if(script_confirmation == True or is_admin_account(username) == True):
         confirmation = input(f"Are you sure you want to delete this account {username}? (Y/N): ")
-        if(confirmation.lower == "y"):
+        if(confirmation.lower() == "y"):
             try:
                 subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
                 audit_logging.log_info(f"{username} has been deleted")
@@ -68,6 +68,7 @@ def delete_account():
                     audit_logging.log_error(f"Error deleting {username}: {str(e.output)}")
         else:
             print("Account deletion cancelled")
+            audit_logging.log_info(f"Account deletion cancelled for {username}")
     else:        
         try:
             subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
@@ -83,6 +84,8 @@ def delete_account():
 
 def bulk_account_deletion():
     print("This will delete accounts from a CSV file")
+    print("Function reads first row as header, and deletes accounts from the second row onwards")
+    print("The first column is the username")
     csv_file = input("Enter the location of the CSV file: ")
     try:
         if script_confirmation == True:
@@ -98,8 +101,8 @@ def bulk_account_deletion():
                         print(row[0] + " (Account does not exist)")
                     else:
                         print(row[0])
-                user_choice = input("Are you sure you want to delete these accounts? (Y/N): ")
-                if(user_choice.lower() == "y"):
+                confirmation = input("Are you sure you want to delete these accounts? (Y/N): ")
+                if(confirmation.lower() == "y"):
                     with open(csv_file) as csvfile:
                         reader = csv.reader(csvfile)
                         next(reader)
@@ -124,6 +127,7 @@ def bulk_account_deletion():
                                     audit_logging.log_error(f"Error deleting user {username} from {csv_file}: {str(e)}")
                 else:
                     print("Account deletion cancelled")
+                    audit_logging.log_info(f"Account deletion cancelled for {csv_file}")
         else:
             with open(csv_file) as csvfile:
                 reader = csv.reader(csvfile)
@@ -149,8 +153,9 @@ def bulk_account_deletion():
                             audit_logging.log_error(f"Error deleting user {username} from {csv_file}: {str(e)}")        
     except FileNotFoundError:
         # Log the file error
-        audit_logging.log_error(f"Error: The file {csv_file} does not exist.")
         print(f"Error: The file {csv_file} does not exist.")
+        audit_logging.log_error(f"Failed to open CSV file '{csv_file}' - not a valid file path")
+        
     
 def change_password():
     print("This will change the password for an account")
@@ -290,7 +295,6 @@ def disable_y_n_confirmation():
         print("Confirmation prompts are still enabled")
         audit_logging.log_info("Confirmation prompts have not been disabled")
         script_confirmation = True    
-script_confirmation = True
 
 def does_account_exist(username):
     try:
@@ -303,6 +307,7 @@ def does_account_exist(username):
             print("Error:", str(e))
             audit_logging.log_error(f"Error checking if user {username} exists: {str(e)}")
             return False
+        
 def is_admin_account(username):
     output = subprocess.check_output(["net", "localgroup", "Administrators"])
     output_str = output.decode("utf-8")
@@ -314,6 +319,7 @@ def is_admin():
     except:
         return False
     
+script_confirmation = True
 
 
 def main_menu():
@@ -339,7 +345,6 @@ def main_menu():
 def main():
     
     audit_logging.setup_logger()
-    # is_admin()
     if not is_admin():
         print("This script must be run as an administrator")
         exit()
