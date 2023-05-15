@@ -53,22 +53,40 @@ def delete_account():
     print("This will delete an account")
     username = input("Enter the username to delete: ")
     if(script_confirmation == True or is_admin_account(username) == True):
-        confirmation = input(f"Are you sure you want to delete this account {username}? (Y/N): ")
-        if(confirmation.lower() == "y"):
-            try:
-                subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
-                audit_logging.log_info(f"{username} has been deleted")
-                print(username + " has been deleted")
-            except subprocess.CalledProcessError as e:
-                if e.returncode == 2:
-                    print(f"Error: The user name {username} does not exist.")
-                    audit_logging.log_error(f"Error deleting {username}: The user {username} does not exist")
-                else:
-                    print("Error:", str(e.output))
-                    audit_logging.log_error(f"Error deleting {username}: {str(e.output)}")
-        else:
-            print("Account deletion cancelled")
-            audit_logging.log_info(f"Account deletion cancelled for {username}")
+        if(is_admin_account(username) == True):
+            confirmation = input(f"This user is an administrator. Are you sure you want to delete this account {username}? (Y/N): ")
+            if(confirmation.lower() == "y"):
+                try:
+                    subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
+                    audit_logging.log_info(f"{username} has been deleted")
+                    print(username + " has been deleted")
+                except subprocess.CalledProcessError as e:
+                    if e.returncode == 2:
+                        print(f"Error: The user name {username} does not exist.")
+                        audit_logging.log_error(f"Error deleting {username}: The user {username} does not exist")
+                    else:
+                        print("Error:", str(e.output))
+                        audit_logging.log_error(f"Error deleting {username}: {str(e.output)}")
+            else:
+                print("Account deletion cancelled")
+                audit_logging.log_info(f"Account deletion cancelled for {username}")
+        elif(is_admin_account(username) == False):
+            confirmation = input(f"Are you sure you want to delete this account {username}? (Y/N): ")
+            if(confirmation.lower() == "y"):
+                try:
+                    subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
+                    audit_logging.log_info(f"{username} has been deleted")
+                    print(username + " has been deleted")
+                except subprocess.CalledProcessError as e:
+                    if e.returncode == 2:
+                        print(f"Error: The user name {username} does not exist.")
+                        audit_logging.log_error(f"Error deleting {username}: The user {username} does not exist")
+                    else:
+                        print("Error:", str(e.output))
+                        audit_logging.log_error(f"Error deleting {username}: {str(e.output)}")
+            else:
+                print("Account deletion cancelled")
+                audit_logging.log_info(f"Account deletion cancelled for {username}")
     else:        
         try:
             subprocess.check_output(["net", "user", username, "/DELETE"], stderr=subprocess.STDOUT)
@@ -109,16 +127,13 @@ def bulk_account_deletion():
                         for row in reader:
                             username = row[0]
                             try:
-                                # Delete the user account
                                 subprocess.check_call(["net", "user", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                                 
                                 print("User " + username + " has been deleted")
 
-                                # Log the successful deletion
                                 audit_logging.log_info(f"User {username} has been deleted from bulk deletion file {csv_file}")
                             except subprocess.CalledProcessError as e:
 
-                                # Log the account error
                                 if e.returncode == 2:
                                     print(f"Error: The user {username} does not exist.")
                                     audit_logging.log_error(f"Error deleting user {username}: The user {username} does not exist")
@@ -135,16 +150,13 @@ def bulk_account_deletion():
                 for row in reader:
                     username = row[0]
                     try:
-                        # Delete the user account
                         subprocess.check_call(["net", "user", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                         
                         print("User " + username + " has been deleted")
 
-                        # Log the successful deletion
                         audit_logging.log_info(f"User {username} has been deleted from bulk deletion file {csv_file}")
                     except subprocess.CalledProcessError as e:
 
-                        # Log the account error
                         if e.returncode == 2:
                             print(f"Error: The user {username} does not exist.")
                             audit_logging.log_error(f"Error deleting user {username}: The user {username} does not exist")
@@ -152,7 +164,6 @@ def bulk_account_deletion():
                             print("Error:", str(e))
                             audit_logging.log_error(f"Error deleting user {username} from {csv_file}: {str(e)}")        
     except FileNotFoundError:
-        # Log the file error
         print(f"Error: The file {csv_file} does not exist.")
         audit_logging.log_error(f"Failed to open CSV file '{csv_file}' - not a valid file path")
         
@@ -163,7 +174,7 @@ def change_password():
     password = input("Enter the new password: ")
     if(script_confirmation == True or is_admin_account(username) == True):
         confirmation = input(f"Are you sure you want to change the password for {username}? (Y/N): ")
-        if(confirmation.lower == "y"):
+        if(confirmation.lower() == "y"):
             try:
                 subprocess.check_call(["net", "user", username, password], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                 audit_logging.log_info(f"The password has been changed for {username}")
@@ -195,7 +206,7 @@ def change_account_to_admin():
     username = input("Enter the username: ")
     if(script_confirmation == True):
         confirmation = input(f"Are you sure you want to add {username} to the Administrators group? (Y/N): ")
-        if(confirmation.lower == "y"):
+        if(confirmation.lower() == "y"):
             try:
                 subprocess.check_call(["net", "localgroup", "Administrators", username, "/ADD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 audit_logging.log_info(f"Changed account '{username}' to Administrator")
@@ -232,7 +243,7 @@ def change_account_to_standard():
     username = input("Enter the username: ")
     if(script_confirmation == True):
         confirmation = input(f"Are you sure you want to remove {username} from the Administrators group? (Y/N): ")
-        if(confirmation.lower == "y"):
+        if(confirmation.lower() == "y"):
             try:
                 subprocess.check_call(["net", "localgroup", "Administrators", username, "/DELETE"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 audit_logging.log_info(f"Changed account '{username}' to Standard User")

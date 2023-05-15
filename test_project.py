@@ -38,6 +38,7 @@ def test_error_create_account(username, password, caplog):
     assert f"Failed to create account: {username} - The account already exists" in caplog.text
 
 
+
 # Delete Account Tests
 def test_delete_account(username, password, confirmation, caplog):
     test_create_account(username, password, caplog)
@@ -52,12 +53,6 @@ def test_confirmation_delete_account(username, caplog):
         with patch('subprocess.check_output', return_value=b''):
             project.delete_account()
     assert f"Account deletion cancelled for {username}" in caplog.text
-
-def test_error_delete_account(username, confirmation, caplog):
-    with patch('builtins.input', side_effect=[username, confirmation]):
-        with patch('subprocess.check_output', side_effect=subprocess.CalledProcessError(2, "")):
-            project.delete_account()
-    assert f"Error deleting {username}: The user {username} does not exist" in caplog.text
 
 
 

@@ -15,7 +15,7 @@ def setup_logger():
     file_handler = TimedRotatingFileHandler(log_file)
     file_handler.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%m-%d-%Y %H:%M:%S')
     file_handler.setFormatter(formatter)
 
     logger.addHandler(file_handler)
