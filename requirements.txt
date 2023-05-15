@@ -1,5 +1,3 @@
 pytest
-subprocess
-unittest-mock
 logging
 datetime
