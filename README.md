@@ -2,6 +2,7 @@
 
 The Windows Account Management Tool is a Python script designed to provide administrators with the ability to create, delete, and manage user accounts on a system. The tool provides a simple menu-based interface to perform various account management tasks.
 
+
 ## Installation
 To install the project, follow these steps:
 
@@ -9,6 +10,14 @@ To install the project, follow these steps:
 2. **Navigate to the project directory**: cd User-Account-Management-Tool
 3. **Install the dependencies**: pip install -r requirements.txt
 4. **Functionality**: To test that functionality is working correctly, start by running test_project.py file and ensure all tests pass.
+
+## Requirements
+
+The User Account Management Tool requires the following Python packages installed to run:
+pytest
+logging
+datetime
+### Script must be ran as an administrator in order for program to function properly. 
 
 ## Functions
 
@@ -44,12 +53,4 @@ To install the project, follow these steps:
 
 The User Account Management Tool uses a custom logger to log all account management activity to an audit log file. The logger provides two log levels: INFO and ERROR. INFO logs all account management activity, while ERROR logs any errors that occur during account management tasks.
 
-## Requirements
 
-The User Account Management Tool requires the following Python packages installed to run:
-
-pytest
-subprocess
-unittest-mock
-logging
-datetime
