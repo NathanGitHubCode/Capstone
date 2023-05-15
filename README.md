@@ -1,11 +1,11 @@
-# User Account Management Tool
+# Windows Account Management Tool
 
-The User Account Management Tool is a Python script designed to provide administrators with the ability to create, delete, and manage user accounts on a system. The tool provides a simple menu-based interface to perform various account management tasks.
+The Windows Account Management Tool is a Python script designed to provide administrators with the ability to create, delete, and manage user accounts on a system. The tool provides a simple menu-based interface to perform various account management tasks.
 
 ## Installation
 To install the project, follow these steps:
 
-1. **Clone the repository**: git clone https://github.com/NathanGitHubCode/User-Account-Management-Tool.git
+1. **Clone the repository**: git clone https://github.com/NathanGitHubCode/Windows-Account-Management-Tool.git
 2. **Navigate to the project directory**: cd User-Account-Management-Tool
 3. **Install the dependencies**: pip install -r requirements.txt
 4. **Functionality**: To test that functionality is working correctly, start by running test_project.py file and ensure all tests pass.
