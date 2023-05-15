@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# Capstone
-=======
-
 # User Account Management Tool
 
 The User Account Management Tool is a Python script designed to provide administrators with the ability to create, delete, and manage user accounts on a system. The tool provides a simple menu-based interface to perform various account management tasks.
@@ -57,5 +53,3 @@ subprocess
 unittest-mock
 logging
 datetime
-
->>>>>>> 45879e79ceaa1a8d936713f13e7eced8c18810a1
