@@ -7,13 +7,13 @@ The Windows Account Management Tool is a Python script designed to provide admin
 To install the project, follow these steps:
 
 1. **Clone the repository**: git clone https://github.com/NathanGitHubCode/Windows-Account-Management-Tool.git
-2. **Navigate to the project directory**: cd User-Account-Management-Tool
+2. **Navigate to the project directory**: cd Windows-Account-Management-Tool
 3. **Install the dependencies**: pip install -r requirements.txt
 4. **Functionality**: To test that functionality is working correctly, start by running test_project.py file and ensure all tests pass.
 
 ## Requirements
 
-The User Account Management Tool requires the following Python packages installed to run:
+The Windows Account Management Tool requires the following Python packages installed to run:
 pytest
 logging
 datetime
