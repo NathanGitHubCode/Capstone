@@ -51,6 +51,6 @@ datetime
 
 ## Logging
 
-The User Account Management Tool uses a custom logger to log all account management activity to an audit log file. The logger provides two log levels: INFO and ERROR. INFO logs all account management activity, while ERROR logs any errors that occur during account management tasks.
+The Windows Account Management Tool uses a custom logger to log all account management activity to an audit log file. The logger provides two log levels: INFO and ERROR. INFO logs all account management activity, while ERROR logs any errors that occur during account management tasks.
 
 
